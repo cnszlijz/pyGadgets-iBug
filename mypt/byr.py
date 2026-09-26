@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import json
+import os
 import sys
 import qbittorrentapi
 import random
@@ -118,11 +119,13 @@ for link in links:
     ids.add(id)
     if len(ids) >= 20:
         break
+scraped = list(ids)
 ids = [id for id in ids if id not in seen]
 urls = [f"https://byr.pt/download.php?id={id}&passkey={config["byr"]['passkey']}" for id in ids]
 if ids:
     qb.torrents_add(urls=urls, category="Auto")
     logger.info(f"Added {len(ids)} new torrent(s) to qBittorrent")
-with open("data.json", "w") as f:
-    seen.extend(ids)
+data["seen"] = scraped
+with open("data.json.tmp", "w") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
+os.replace("data.json.tmp", "data.json")

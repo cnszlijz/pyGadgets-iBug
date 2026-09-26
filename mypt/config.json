@@ -1,12 +1,12 @@
 {
   "qbittorrent": {
-    "url": "https://qb.s.ibugone.com"
+    "url": "https://localhost.cnszlijz.dpdns.org:8848"
   },
   "byr": {
-    "username": "iBug",
-    "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "user-agent": "Mozilla/5.0 (iBug's BYR helper)",
-    "cookie": "auth_token=aaaaaaaa",
-    "passkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "username": "cnszlijz",
+    "password": "byrbt417",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+    "cookie": "auth_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYmYiOjE3ODk5MTY2MjYuMDIxMzkxLCJleHAiOjE3ODk5MTc1MjYuMDIxNDQzLCJqdGkiOiJmYmU5NjkzYS00ZTVmLTQ1ZDUtYjU1NC0zYjMyYmQ5NWZlMmYiLCJpYXQiOjE3ODk5MTY2MjYuMDIxMzkxLCJpc3MiOiJzZXNzaW9uIiwiYXVkIjoiY2U1OGMxMGEtMjk2MS00MTkxLTkyMDQtZWU3Yzg0ODE5ZWQ2Iiwic3ViIjoiMzg2NTY4In0.WIXpLTfuXvzymJdUSurfTEkjTut2VsCEgmRPeuoXaVc; session_id=ce58c10a-2961-4191-9204-ee7c84819ed6; refresh_token=77b9ca53c3ff28800eb8faa852b9458ef9104e0b60565303fc5d09af760179a8",
+    "passkey": "44ef4e5ba87f22ed5af6f50d4741b563"
   }
 }
