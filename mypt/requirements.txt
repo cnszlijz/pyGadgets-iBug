@@ -2,3 +2,5 @@ qbittorrent-api
 influxdb
 psutil
 humanize
+lxml
+BeautifulSoup4
