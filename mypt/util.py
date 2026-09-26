@@ -1,8 +1,30 @@
 import datetime
 import humanize
 import json
+import logging
 import os
 import qbittorrentapi
+
+
+logger = logging.getLogger("mpt")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    logger.addHandler(logging.StreamHandler())
+
+
+def setup_logging(filename: str = "byr.log", level: int = logging.INFO) -> None:
+    """Configure the shared logger to write to both a file and the console."""
+    logger.setLevel(level)
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        handler.close()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    file_handler = logging.FileHandler(filename, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
 
 
 now = datetime.datetime.now()
@@ -46,5 +68,5 @@ def format_status(torrent: qbittorrentapi.TorrentDictionary) -> str:
 
 
 def delete_torrent(torrent: qbittorrentapi.TorrentDictionary) -> None:
-    print(f"Delete {format_status(torrent)}")
+    logger.info(f"Delete {format_status(torrent)}")
     torrent.delete(delete_files=True)

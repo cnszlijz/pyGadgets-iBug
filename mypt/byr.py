@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import json
-import os
+import sys
 import qbittorrentapi
 import random
 import re
@@ -9,16 +9,20 @@ import requests
 
 from bs4 import BeautifulSoup
 
-from util import now_ts, chdir, load_config, format_status, delete_torrent
+from util import now_ts, chdir, load_config, format_status, delete_torrent, setup_logging, logger
 
 chdir()
+setup_logging("byr.log")
 config = load_config()
 with open("data.json", "r") as f:
-    data = json.load(f)
+    try:
+        data = json.load(f)
+    except json.decoder.JSONDecodeError:
+        data = {}
     seen = []
     chance = 1
     for id in data.get("seen", []):
-        chance *= 0.99
+        #chance *= 0.99
         if chance > random.random():
             seen.append(id)
     data["seen"] = seen
@@ -39,10 +43,10 @@ for torrent in qb.torrents_info():
     added_ago = now_ts - torrent.added_on
     deleted = False
     for active_days, target_GB, target_ratio in [
-        (14, 1024, 20.0),
-        (7, 600, 15.0),
-        (3, 250, 12.0),
-        (1, 100, 10.0),
+        (14, 1024, 10.0),
+        (7, 600, 5.0),
+        (3, 250, 2.0),
+        (1, 100, 1.0),
     ]:
         if last_active_ago > active_days * day:
             if torrent.uploaded < target_GB * GB and torrent.ratio < target_ratio:
@@ -50,7 +54,7 @@ for torrent in qb.torrents_info():
                 deleted = True
                 break
             if torrent.save_path == "/mnt/bts":
-                print(f"Move {format_status(torrent)}")
+                logger.info(f"Move {format_status(torrent)}")
                 torrent.set_save_path("/mnt/bt1")
                 break
     if deleted:
@@ -60,11 +64,11 @@ for torrent in qb.torrents_info():
         # Skip added_days-based check if active within 6h
         continue
     for added_days, target_GB, target_ratio in [
-        (30, 1024, 15.0),
-        (14, 500, 15.0),
-        (7, 300, 12.0),
-        (3, 200, 10.0),
-        (1, 100, 5.0),
+        (30, 1024, 8.0),
+        (14, 500, 5.0),
+        (7, 300, 4.0),
+        (3, 200, 3.0),
+        (1, 100, 2.0),
         (0.5, 50, 1.0),
     ]:
         if added_ago > added_days * day:
@@ -81,7 +85,8 @@ headers = {
 resp = requests.get("https://byr.pt/torrents.php", headers=headers)
 resp.raise_for_status()
 if resp.history:
-    print("login failed, try again")
+    print(resp.history[0].headers)
+    logger.warning("login failed, try again")
     # import decaptcha
     # d = decaptcha.DeCaptcha()
     # d.load_model("captcha_classifier.pkl")
@@ -89,15 +94,17 @@ if resp.history:
     payload = {
         "username": config["byr"]["username"],
         "password": config["byr"]["password"],
-        "autologin": "yes",
+        "type" : "username",
+        "remember" : True
     }
-    resp = requests.post("https://byr.pt/takelogin.php", data=payload, headers=headers | {
+    resp = requests.post("https://byr.pt/api/v2/login.php", json=payload, headers=headers | {
         "Origin": "https://byr.pt",
-        "Referer": "https://byr.pt/login.php",
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": "https://byr.pt/login",
+        "Content-Type": "application/json",
     })
     if not resp.history:
-        os.exit(1)
+        print(resp.text)
+        sys.exit(1)
     resp.raise_for_status()
     config["byr"]["cookie"] = resp.history[0].headers["Set-Cookie"].split(" ", 1)[0]
     with open("config.json", "w") as f:
@@ -113,7 +120,9 @@ for link in links:
         break
 ids = [id for id in ids if id not in seen]
 urls = [f"https://byr.pt/download.php?id={id}&passkey={config["byr"]['passkey']}" for id in ids]
-qb.torrents_add(urls=urls, category="Auto")
+if ids:
+    qb.torrents_add(urls=urls, category="Auto")
+    logger.info(f"Added {len(ids)} new torrent(s) to qBittorrent")
 with open("data.json", "w") as f:
     seen.extend(ids)
     json.dump(data, f, indent=2, ensure_ascii=False)
